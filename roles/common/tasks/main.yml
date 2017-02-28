@@ -1,5 +1,8 @@
 ---
-  #gather_facts: true  
+  #gather_facts: true
+     - name: Update all packages to the latest version
+       apt:
+         upgrade: dist
      - name: Install list of packages
        apt: name={{item}} state=installed
        with_items:
