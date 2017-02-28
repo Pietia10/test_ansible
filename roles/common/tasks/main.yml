@@ -30,10 +30,17 @@
      
      - name: Copy nginx conf
        copy: src=nginx.conf dest=/etc/nginx/
-
+     - stat:
+         path: /etc/letsencrypt/live/{{ drupal_uri }}
+       register: st
+     
      - name: Copy template nginx conf vhost
-       template: src=devopscompucorp.tk.conf.j2 dest=/etc/nginx/sites-enabled/devopscompucorp.tk.conf
+       template: src={{ drupal_uri }}.conf.j2 dest=/etc/nginx/sites-enabled/{{ drupal_uri }}.conf
        notify: restart nginx
+
+     - name: Execute the command in remote shell create certs.
+       shell: certbot certonly --webroot -w /var/www/html/drupal -d {{ drupal_uri }} -d www.{{ drupal_uri }}
+       when: st.stat.islnk is not defined
 
      - name: delete anonymous MySQL server user for {{ ansible_hostname }}
        action: mysql_user user="" host="{{ ansible_hostname }}" state="absent" 
@@ -60,13 +67,6 @@
      - name: Create drupal database user
        mysql_user: name={{ db_user }} password={{ db_password }} priv={{ db_name }}.*:ALL host=localhost state=present
        
-#     - name: Remove test database and access to it
-#       command: 'mysql -ne "{{ item }}"'
- #      with_items:
-  #       - CREATE DATABASE drupal7;
-   #    changed_when: False
-    #   ignore_errors: True
-
      - name: Copy the drupal mysql db
        copy: src=alldatabases.sql dest=/tmp
 
@@ -77,7 +77,7 @@
        file: path=/var/www/html state=directory
 
      - name: Extract archive
-       unarchive: src=/var/www/html/drupal.tar.gz
+       unarchive: src=drupal.tar.gz
              dest=/var/www/html
              remote_src=yes
    
