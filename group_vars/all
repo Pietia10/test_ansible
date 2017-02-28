@@ -1,0 +1,2 @@
+server_domain: devopscompucorp.tk
+php_fscgi_pool: php5-fpm.sock

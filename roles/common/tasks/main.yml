@@ -1,0 +1,91 @@
+---
+  #gather_facts: true  
+     - name: Install list of packages
+       apt: name={{item}} state=installed
+       with_items:
+       - mysql-server
+       - php5-fpm
+       - php5-curl
+       - libssl-dev
+       - python-pip
+       - python-mysqldb
+       - php5-gd
+       - php5-mysql
+       - nginx
+       - php5-fpm
+       - curl
+       - drush
+     - name: Update the repository cache and update package "certbot" to latest version using default release jessie-backport
+       apt:
+        name: certbot
+        state: latest
+        default_release: jessie-backports
+        update_cache: yes
+
+     - pip:
+          name: MySQL-python
+     
+     - name: Copy the my conf for authentication
+       copy: src=my.cnf dest=/root/.my.cnf
+     
+     - name: Copy nginx conf
+       copy: src=nginx.conf dest=/etc/nginx/
+
+     - name: Copy template nginx conf vhost
+       template: src=devopscompucorp.tk.conf.j2 dest=/etc/nginx/sites-enabled/devopscompucorp.tk.conf
+       notify: restart nginx
+
+     - name: delete anonymous MySQL server user for {{ ansible_hostname }}
+       action: mysql_user user="" host="{{ ansible_hostname }}" state="absent" 
+ 
+     - name: delete anonymous MySQL server user for localhost
+       action: mysql_user user="" state="absent"
+ 
+     - name: remove the MySQL test database
+       action: mysql_db db=test state=absent
+     
+     - name: Change root user password on first run
+       mysql_user: login_user=root
+             login_password='qwe123'
+             name=root
+             password={{ mysql_root_password }}
+             priv=*.*:ALL,GRANT
+             host={{ item }}
+       with_items:
+         - "{{ ansible_hostname }}"
+         - 127.0.0.1
+         - ::1
+         - localhost
+    
+     - name: Create drupal database user
+       mysql_user: name={{ db_user }} password={{ db_password }} priv={{ db_name }}.*:ALL host=localhost state=present
+       
+#     - name: Remove test database and access to it
+#       command: 'mysql -ne "{{ item }}"'
+ #      with_items:
+  #       - CREATE DATABASE drupal7;
+   #    changed_when: False
+    #   ignore_errors: True
+
+     - name: Copy the drupal mysql db
+       copy: src=alldatabases.sql dest=/tmp
+
+     - name: Import the database
+       mysql_db: name={{ db_name }} state=import target=/tmp/alldatabases.sql
+     
+     - name: Creates directory
+       file: path=/var/www/html state=directory
+
+     - name: Extract archive
+       unarchive: src=/var/www/html/drupal.tar.gz
+             dest=/var/www/html
+             remote_src=yes
+   
+#I tried with brush however it proved to be impossible to install civicrm using version provided by official debian repo
+ # - name: Site Install with Drush
+ #      command: |
+ #        drush si standard --db-url=mysql://{{ db_user }}:{{ db_password }}@127.0.0.1:3306/{{ db_name }} --sites-subdir="{{ drupal_uri }}" -r {{ drupal_www_dir }} --account-name=admin --account-pass=admin123 -y
+#         chdir= {{ drupal_www_dir }}
+
+
+
