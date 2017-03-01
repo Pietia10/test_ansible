@@ -1,2 +1,2 @@
-server_domain: devopscompucorp.tk
+server_domain: "{{ drupal_uri }}"
 php_fscgi_pool: php5-fpm.sock
