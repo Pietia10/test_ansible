@@ -47,7 +47,7 @@
 
      - name: Change root user password on first run
        mysql_user: login_user=root
-             login_password='qwe123'
+             login_password=''
              name=root
              password={{ mysql_root_password }}
              priv=*.*:ALL,GRANT
