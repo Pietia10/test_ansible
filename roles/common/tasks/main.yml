@@ -58,20 +58,19 @@
              priv=*.*:ALL,GRANT
              host={{ item }}
        with_items:
-         - "{{ ansible_hostname }}"
          - 127.0.0.1
          - ::1
          - localhost
-    
+      
      - name: Create drupal database user
        mysql_user: name={{ db_user }} password={{ db_password }} priv={{ db_name }}.*:ALL host=localhost state=present
        
      - name: Copy the drupal mysql db
        copy: src=alldatabases.sql dest=/tmp
-
-     - name: Import the database
-       mysql_db: name={{ db_name }} state=import target=/tmp/alldatabases.sql
      
+     - name: Import DB 
+       shell: mysql < alldatabases.sql
+ 
      - name: Creates directory
        file: path=/var/www/html state=directory
 
