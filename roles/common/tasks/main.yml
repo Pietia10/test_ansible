@@ -41,10 +41,6 @@
        template: src={{ drupal_uri }}.conf.j2 dest=/etc/nginx/sites-enabled/{{ drupal_uri }}.conf
        notify: restart nginx
 
-     - name: Execute the command in remote shell create certs.
-       shell: certbot certonly --webroot -w /var/www/html/drupal -d {{ drupal_uri }} -d www.{{ drupal_uri }}
-       when: st.stat.islnk is not defined
-
      - name: delete anonymous MySQL server user for {{ ansible_hostname }}
        action: mysql_user user="" host="{{ ansible_hostname }}" state="absent" 
  
@@ -83,7 +79,10 @@
        unarchive: src=drupal.tar.gz
              dest=/var/www/html
              remote_src=yes
-   
+     - name: Execute the command in remote shell create certs.
+       shell: certbot certonly --webroot -w /var/www/html/drupal -d {{ drupal_uri }} -d www.{{ drupal_uri }}
+       when: st.stat.islnk is not defined
+
 #I tried with brush however it proved to be impossible to install civicrm using version provided by official debian repo
  # - name: Site Install with Drush
  #      command: |
