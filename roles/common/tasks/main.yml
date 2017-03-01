@@ -36,7 +36,11 @@
      - stat:
          path: /etc/letsencrypt/live/{{ drupal_uri }}
        register: st
-     
+
+     - stat:
+         path: /var/www/html/drupal
+       register: drupalexist
+
      - name: Copy template nginx conf vhost
        template: src={{ drupal_uri }}.conf.j2 dest=/etc/nginx/sites-enabled/{{ drupal_uri }}.conf
        notify: restart nginx
@@ -52,7 +56,7 @@
          - 127.0.0.1
          - ::1
          - localhost
-
+       when: drupalexist.stat.islnk is not defined
      - name: delete anonymous MySQL server user for {{ ansible_hostname }}
        action: mysql_user user="" host="{{ ansible_hostname }}" state="absent" 
  
