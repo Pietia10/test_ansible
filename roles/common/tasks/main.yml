@@ -69,7 +69,7 @@
        copy: src=alldatabases.sql dest=/tmp
      
      - name: Import DB 
-       shell: mysql < alldatabases.sql
+       shell: mysql < /tmp/alldatabases.sql
  
      - name: Creates directory
        file: path=/var/www/html state=directory
