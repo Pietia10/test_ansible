@@ -1,4 +1,4 @@
-#execute with : ansible-playbook site.yml -c local --extra-vars "mysql_root_password=qwe123 db_user=drupal7 db_password=qwe123 db_name=drupal7 drupal_uri=anydomain.com"
+#execute with : ansible-playbook site.yml -c local --extra-vars "mysql_root_password=qwe123 db_user=drupal75 db_password=qwe123 db_name=drupal75 drupal_uri=devops.tk drupal_www_dir=/var/www/html/devops.tk"
 #default admin/admin123 password for panel
 - name: apply common configuration to all nodes
   hosts: all

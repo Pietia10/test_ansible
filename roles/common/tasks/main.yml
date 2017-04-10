@@ -68,29 +68,26 @@
      
      - name: Create drupal database user
        mysql_user: name={{ db_user }} password={{ db_password }} priv={{ db_name }}.*:ALL host=localhost state=present
-       
-     - name: Copy the drupal mysql db
-       copy: src=alldatabases.sql dest=/tmp
-     
-     - name: Import DB 
-       shell: mysql < /tmp/alldatabases.sql
+     #when civicrm and automatic backup to AWS is required\/  
+     #- name: Copy the drupal mysql db
+     # copy: src=alldatabases.sql dest=/tmp
+     #- name: Import DB 
+     #  shell: mysql < /tmp/alldatabases.sql
  
      - name: Creates directory
-       file: path=/var/www/html state=directory
+       file: path={{ drupal_www_dir }} state=directory
 
      - name: Extract archive
-       unarchive: src=drupal.tar.gz
-             dest=/var/www/html
-             remote_src=yes
+       unarchive: src=drupal.zip
+             dest={{ drupal_www_dir }}
+             remote_src=no
+
+     - name: Site Install with Drush
+       command: |
+         drush si standard --db-url=mysql://{{ db_user }}:{{ db_password }}@127.0.0.1:3306/{{ db_name }} --sites-subdir="{{ drupal_uri }}" -r {{ drupal_www_dir }} --account-name=admin --account-pass=admin123 -y
+         chdir= {{ drupal_www_dir }}
+
+
      - name: Execute the command in remote shell create certs.
        shell: certbot certonly --webroot -w /var/www/html/drupal -d {{ drupal_uri }} -d www.{{ drupal_uri }}
        when: st.stat.islnk is not defined
-
-#I tried with brush however it proved to be impossible to install civicrm using version provided by official debian repo
- # - name: Site Install with Drush
- #      command: |
- #        drush si standard --db-url=mysql://{{ db_user }}:{{ db_password }}@127.0.0.1:3306/{{ db_name }} --sites-subdir="{{ drupal_uri }}" -r {{ drupal_www_dir }} --account-name=admin --account-pass=admin123 -y
-#         chdir= {{ drupal_www_dir }}
-
-
-
