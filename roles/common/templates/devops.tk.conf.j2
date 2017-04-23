@@ -17,7 +17,7 @@ server {
     ssl_stapling on;
     ssl_stapling_verify on;
 
-    root /var/www/html/drupal;
+    root /var/www/html/{{ server_domain }};
     index index.html index.htm index.php;
 
     location = /favicon.ico {
@@ -56,15 +56,11 @@ server {
     location ~* ^/sites/.*/(?:modules)/(civicrm)/.*\.php$ {
         access_log     off;
         try_files $uri =404;
-        fastcgi_pass unix:/var/run/php5-fpm-site1.sock;
+        fastcgi_pass unix:/var/run/{{ php_fscgi_pool }};
     }
     ## Protect private CiviCRM files
    location ~* /(sites/default/)?files/civicrm/(upload|ConfigAndLog|custom)/ {
       internal;
-    }
-
-    location '/.well-known/acme-challenge' {
-        root        /var/www/demo;
     }
 	
     location / {
